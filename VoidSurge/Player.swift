@@ -192,13 +192,16 @@ class Player: SKNode {
             }
         }
 
-        // Orbital blades
+        // Orbital blades — position manually, then zero velocity so dynamic body
+        // doesn't accumulate physics-engine drift between frames
         orbitalAngle += CGFloat(dt) * 3.5
         for blade in orbitalBlades {
             let angle = orbitalAngle + blade.angleOffset
             blade.position = CGPoint(x: cos(angle) * blade.orbitRadius,
                                      y: sin(angle) * blade.orbitRadius)
             blade.zRotation = angle + .pi / 2
+            blade.physicsBody?.velocity = .zero
+            blade.physicsBody?.angularVelocity = 0
         }
     }
 

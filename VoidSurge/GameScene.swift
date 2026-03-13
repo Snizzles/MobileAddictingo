@@ -744,8 +744,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 return
             }
 
-            // Joystick on left half
-            if loc.x < size.width / 2 && joystickTouch == nil {
+            // Joystick on left half (camera-space: center = 0, left = negative)
+            if camLoc.x < 0 && joystickTouch == nil {
                 joystickTouch = touch
                 // Convert to camera space for joystick positioning
                 joystick.touchBegan(at: camLoc)
