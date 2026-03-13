@@ -168,17 +168,17 @@ class VirtualJoystick {
     this.scene = scene; this.active = false;
     this.baseX=0; this.baseY=0; this.thumbX=0; this.thumbY=0;
     this.dx=0; this.dy=0; this.magnitude=0;
-    this.baseR=60; this.thumbR=24; this._ptr=null;
+    this.baseR=60; this.thumbR=24; this._ptrId=null;
     this.gfx = scene.add.graphics().setScrollFactor(0).setDepth(100);
   }
   down(ptr) {
-    if (this._ptr) return;
-    this._ptr=ptr; this.active=true;
+    if (this._ptrId != null) return;
+    this._ptrId=ptr.id; this.active=true;
     this.baseX=ptr.x; this.baseY=ptr.y; this.thumbX=ptr.x; this.thumbY=ptr.y;
     this.dx=0; this.dy=0; this.magnitude=0; this._draw();
   }
   move(ptr) {
-    if (this._ptr!==ptr) return;
+    if (this._ptrId !== ptr.id) return;
     const dx=ptr.x-this.baseX, dy=ptr.y-this.baseY, d=Math.sqrt(dx*dx+dy*dy);
     const cl=Math.min(d,this.baseR);
     // Dead zone of 8px to avoid accidental micro-movements
@@ -187,12 +187,12 @@ class VirtualJoystick {
     this.thumbX=this.baseX+this.dx*cl; this.thumbY=this.baseY+this.dy*cl; this._draw();
   }
   up(ptr) {
-    if (this._ptr!==ptr) return;
-    this._ptr=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
+    if (this._ptrId !== ptr.id) return;
+    this._ptrId=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
   }
   release() {
     // Force-release regardless of which pointer holds it
-    this._ptr=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
+    this._ptrId=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
   }
   _draw() {
     const g=this.gfx; g.clear();
@@ -366,7 +366,7 @@ class GameScene extends Phaser.Scene {
     this.input.addPointer(2);
     this.input.on('pointerdown', p => {
       if (this.upgradeOn || this.tutorialOn) return;
-      if (p.x < W*0.55) this.joy.down(p);
+      if (p.x < W*0.65) this.joy.down(p);
     });
     this.input.on('pointermove', p => {
       if (this.upgradeOn || this.tutorialOn) return;
@@ -668,10 +668,9 @@ class GameScene extends Phaser.Scene {
       ['SURVIVE', 'Last as long as possible'],
     ];
     rows.forEach(([label, desc], i) => {
-      const y = H*0.28 + i*68;
-      objs.push(t(cx-10, y,   label, 15, '#ffc844', [1,0.5]));
-      objs.push(t(cx+14, y,   '→',   13, '#664400', [0,0.5]));
-      objs.push(t(cx+28, y,   desc,  12, '#ccbbaa', [0,0.5]));
+      const y = H*0.28 + i*62;
+      objs.push(t(cx, y-9,  label, 14, '#ffc844'));
+      objs.push(t(cx, y+10, desc,  12, '#ccbbaa'));
     });
 
     objs.push(t(cx, H*0.72, '─────────────────', 11, '#553300'));
@@ -869,6 +868,12 @@ class GameScene extends Phaser.Scene {
       this.wave.update(dt);
     }
 
+    // Joystick stuck-pointer safety: release if tracked touch is no longer down
+    if (this.joy.active && this.joy._ptrId != null) {
+      const stillDown = this.input.manager.pointers.some(p => p.isDown && p.id === this.joy._ptrId);
+      if (!stillDown) this.joy.release();
+    }
+
     // Player movement (blocked during upgrade)
     if (this.joy.active && !this.upgradeOn) {
       const spd=this.stats.moveSpeed;
@@ -1007,11 +1012,10 @@ new Phaser.Game({
   type: Phaser.AUTO,
   width: 390, height: 844,
   backgroundColor: '#0a0808',
-  // FIX: render at native screen resolution so it's sharp on high-DPI phones
-  resolution: window.devicePixelRatio || 1,
   physics: { default:'arcade', arcade:{ debug:false, gravity:{x:0,y:0} } },
   scene: [MenuScene, GameScene, GameOverScene],
-  scale: { mode:Phaser.Scale.FIT, autoCenter:Phaser.Scale.CENTER_BOTH },
+  scale: { mode:Phaser.Scale.FIT, autoCenter:Phaser.Scale.CENTER_BOTH,
+           zoom: window.devicePixelRatio || 1 },
   input: { activePointers:3 },
 });
 </script>
