@@ -253,14 +253,15 @@ class Enemy: SKNode {
         let dy = playerPosition.y - position.y
         let dist = hypot(dx, dy)
 
-        // Movement
+        // Movement — velocity-based so physics engine & contacts work correctly
         switch type {
         case .shooter:
             if dist > shootRange * 0.75 {
-                move(dx: dx, dy: dy, dist: dist, speed: effectiveSpeed, dt: dt)
+                setVelocity(dx: dx, dy: dy, dist: dist, speed: effectiveSpeed)
             } else if dist < shootRange * 0.5 {
-                // Back away
-                move(dx: -dx, dy: -dy, dist: dist, speed: effectiveSpeed * 0.6, dt: dt)
+                setVelocity(dx: -dx, dy: -dy, dist: dist, speed: effectiveSpeed * 0.6)
+            } else {
+                physicsBody?.velocity = .zero
             }
             // Shoot timer
             shootTimer -= dt
@@ -269,18 +270,14 @@ class Enemy: SKNode {
                 onShoot?(position, playerPosition)
             }
         case .boss:
-            // Boss has wider zigzag
             let t = CACurrentMediaTime()
             let sideOffset = sin(t * 1.5) * 80
             let perp = dist > 0 ? CGPoint(x: -dy / dist * sideOffset, y: dx / dist * sideOffset) : .zero
-            let targetX = playerPosition.x + perp.x
-            let targetY = playerPosition.y + perp.y
-            let tdx = targetX - position.x
-            let tdy = targetY - position.y
+            let tdx = (playerPosition.x + perp.x) - position.x
+            let tdy = (playerPosition.y + perp.y) - position.y
             let tdist = hypot(tdx, tdy)
-            move(dx: tdx, dy: tdy, dist: tdist, speed: effectiveSpeed, dt: dt)
+            setVelocity(dx: tdx, dy: tdy, dist: tdist, speed: effectiveSpeed)
 
-            // Boss shoots every 1.5s
             shootTimer -= dt
             if shootTimer <= 0 {
                 shootTimer = 1.5
@@ -288,7 +285,7 @@ class Enemy: SKNode {
             }
         default:
             if dist > 0 {
-                move(dx: dx, dy: dy, dist: dist, speed: effectiveSpeed, dt: dt)
+                setVelocity(dx: dx, dy: dy, dist: dist, speed: effectiveSpeed)
             }
         }
 
@@ -296,10 +293,9 @@ class Enemy: SKNode {
         body.zRotation += CGFloat(dt) * (type == .tank ? 0.5 : (type == .shooter ? -1.2 : 1.5))
     }
 
-    private func move(dx: CGFloat, dy: CGFloat, dist: CGFloat, speed: CGFloat, dt: TimeInterval) {
-        guard dist > 1 else { return }
-        position.x += (dx / dist) * speed * CGFloat(dt)
-        position.y += (dy / dist) * speed * CGFloat(dt)
+    private func setVelocity(dx: CGFloat, dy: CGFloat, dist: CGFloat, speed: CGFloat) {
+        guard dist > 1 else { physicsBody?.velocity = .zero; return }
+        physicsBody?.velocity = CGVector(dx: (dx / dist) * speed, dy: (dy / dist) * speed)
     }
 
     // MARK: - Damage

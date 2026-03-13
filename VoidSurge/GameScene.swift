@@ -229,8 +229,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             player.position.x = newX.clamped(to: margin...(size.width - margin))
             player.position.y = newY.clamped(to: margin...(size.height - margin))
         }
+        // Zero out physics drift from manual repositioning
+        player.physicsBody?.velocity = .zero
 
+        player.isMoving = joystick.isActive
         player.update(deltaTime: dt)
+
+        // Aim weapon at nearest enemy
+        if let target = nearestEnemy(to: player.position) {
+            player.aimWeapon(toward: target.position)
+        }
 
         // Auto-shoot
         player.shootTimer -= dt
@@ -242,6 +250,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private func firePlayerBullets() {
         guard let target = nearestEnemy(to: player.position) else { return }
+        SoundManager.shared.play(.shoot)
 
         let dx = target.position.x - player.position.x
         let dy = target.position.y - player.position.y
@@ -338,6 +347,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(flash)
         flash.run(SKAction.sequence([SKAction.fadeOut(withDuration: 0.5), SKAction.removeFromParent()]))
 
+        SoundManager.shared.play(.bossSpawn)
         shakeCamera(intensity: 8, duration: 0.3)
     }
 
@@ -443,6 +453,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             let dist = hypot(orb.position.x - player.position.x, orb.position.y - player.position.y)
             if dist < collectRadius {
                 orb.collect()
+                SoundManager.shared.play(.xpCollect)
                 let leveledUp = gameStats.addXP(orb.xpValue)
                 if leveledUp { triggerLevelUp() }
             }
@@ -499,6 +510,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         guard bullet.parent != nil, enemy.parent != nil else { return }
 
         let killed = enemy.takeDamage(bullet.damage)
+        SoundManager.shared.play(killed ? .enemyDie : .enemyHit)
 
         // Freeze
         if player.stats.freezeChance > 0 && CGFloat.random(in: 0...1) < player.stats.freezeChance {
@@ -547,6 +559,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         let damaged = player.takeDamage(enemy.type.contactDamage)
         if damaged {
+            SoundManager.shared.play(.playerHit)
             shakeCamera(intensity: 5, duration: 0.2)
             if player.stats.currentHP <= 0 { triggerGameOver() }
         }
@@ -557,6 +570,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bullet.removeFromParent()
         let damaged = player.takeDamage(bullet.damage)
         if damaged {
+            SoundManager.shared.play(.playerHit)
             shakeCamera(intensity: 4, duration: 0.15)
             if player.stats.currentHP <= 0 { triggerGameOver() }
         }
@@ -633,6 +647,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     private func triggerLevelUp() {
         gameState = .levelingUp
+        SoundManager.shared.play(.levelUp)
 
         let types = randomUpgrades(from: player.stats, count: 3)
         guard !types.isEmpty else { gameState = .playing; return }

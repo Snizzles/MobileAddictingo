@@ -145,8 +145,8 @@ class HUD: SKNode {
         // HP Bar
         let hpRatio = stats.maxHP > 0 ? stats.currentHP / stats.maxHP : 0
         let newHPWidth = max(2, barWidth * hpRatio)
-        let hpLeft = hpBarBg.position.x - barWidth / 2
-        hpBarFill.path = CGPath(roundedRect: CGRect(x: hpLeft, y: hpBarBg.position.y - barHeight / 2,
+        // Path coords are LOCAL to hpBarFill's position — left edge is -barWidth/2
+        hpBarFill.path = CGPath(roundedRect: CGRect(x: -barWidth / 2, y: -barHeight / 2,
                                                      width: newHPWidth, height: barHeight),
                                  cornerWidth: 8, cornerHeight: 8, transform: nil)
         let r = hpRatio > 0.5 ? CGFloat((1 - hpRatio) * 2) : 1

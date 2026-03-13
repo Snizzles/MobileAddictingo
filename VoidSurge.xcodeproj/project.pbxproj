@@ -22,6 +22,8 @@
 		AA000000000000000000AAD4 /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000AAD3 /* GameScene.swift */; };
 		AA000000000000000000AAD7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000AAD6 /* Assets.xcassets */; };
 		AA000000000000000000AAB9 /* SpriteKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA000000000000000000AAB8 /* SpriteKit.framework */; };
+		CC000000000000000000AAA2 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000000000000000000AAA1 /* SoundManager.swift */; };
+		CC000000000000000000AAA4 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CC000000000000000000AAA3 /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +44,8 @@
 		AA000000000000000000AAD6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA000000000000000000AABA /* VoidSurge.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VoidSurge.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA000000000000000000AAB8 /* SpriteKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SpriteKit.framework; path = System/Library/Frameworks/SpriteKit.framework; sourceTree = SDKROOT; };
+		CC000000000000000000AAA1 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		CC000000000000000000AAA3 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +54,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA000000000000000000AAB9 /* SpriteKit.framework in Frameworks */,
+				CC000000000000000000AAA4 /* AVFoundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +88,7 @@
 				AA000000000000000000AAD3 /* GameScene.swift */,
 				AA000000000000000000AAD5 /* Info.plist */,
 				AA000000000000000000AAD6 /* Assets.xcassets */,
+				CC000000000000000000AAA1 /* SoundManager.swift */,
 			);
 			path = VoidSurge;
 			sourceTree = "<group>";
@@ -91,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				AA000000000000000000AAB8 /* SpriteKit.framework */,
+				CC000000000000000000AAA3 /* AVFoundation.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -185,6 +192,7 @@
 				AA000000000000000000AAD0 /* MenuScene.swift in Sources */,
 				AA000000000000000000AAD2 /* GameOverScene.swift in Sources */,
 				AA000000000000000000AAD4 /* GameScene.swift in Sources */,
+				CC000000000000000000AAA2 /* SoundManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
