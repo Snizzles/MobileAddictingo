@@ -311,6 +311,7 @@ class GameScene extends Phaser.Scene {
     this.upgObjs     = [];
     this.bossEnemy   = null;
     this.bossBarOn   = false;
+    this.tutorialOn  = true;
 
     // ── Camera ──
     this.cameras.main.setBounds(-this.WORLD/2,-this.WORLD/2,this.WORLD,this.WORLD);
@@ -364,17 +365,18 @@ class GameScene extends Phaser.Scene {
     // ── Input ──
     this.input.addPointer(2);
     this.input.on('pointerdown', p => {
-      if (this.upgradeOn) return;       // block all input during upgrade except card zones
+      if (this.upgradeOn || this.tutorialOn) return;
       if (p.x < W*0.55) this.joy.down(p);
     });
     this.input.on('pointermove', p => {
-      if (this.upgradeOn) return;
+      if (this.upgradeOn || this.tutorialOn) return;
       this.joy.move(p);
     });
     this.input.on('pointerup', p => this.joy.up(p));
 
     this.cameras.main.startFollow(this.player,true,0.1,0.1);
     this.cameras.main.fadeIn(400);
+    this._showTutorial();
   }
 
   // ── HUD texts (scroll-fixed) ──────────────
@@ -386,8 +388,10 @@ class GameScene extends Phaser.Scene {
     this.txtTimer = ts(W/2, 52, '00:00',   16, '#ffaa44').setOrigin(0.5);
     this.txtKills = ts(W-8, 8,  'KILLS:0', 12, '#aaaaaa').setOrigin(1,0);
     this.txtDiff  = ts(W-8, 24, 'ROOKIE',  11, '#886644').setOrigin(1,0);
-    this.txtLevel = ts(W/2, H-14,'LVL 1',  12, '#cc88ff').setOrigin(0.5);
-    this.txtBoss  = ts(W/2, H-76,'',       13, '#ff4400').setOrigin(0.5).setVisible(false);
+    // Bottom strip: level on left, xp label on right — positioned above xp bar
+    this.txtLevel = ts(10, H-46, 'LVL 1',  12, '#cc88ff').setOrigin(0,0.5);
+    this.txtXPVal = ts(W-10, H-46, '0 / 20 XP', 11, '#9966cc').setOrigin(1,0.5);
+    this.txtBoss  = ts(W/2, H-84,'',       12, '#ff4400').setOrigin(0.5).setVisible(false);
   }
 
   // ── Spawn helpers ─────────────────────────
@@ -639,6 +643,52 @@ class GameScene extends Phaser.Scene {
     }
   }
 
+  // ── Tutorial overlay ──────────────────────
+  _showTutorial() {
+    const W=this.scale.width, H=this.scale.height;
+    const ov=this.add.graphics().setScrollFactor(0).setDepth(80);
+    ov.fillStyle(0x000000,0.88); ov.fillRect(0,0,W,H);
+    ov.fillStyle(0x2a1a00,0.9); ov.fillRoundedRect(20,H*0.12,W-40,H*0.76,16);
+    ov.lineStyle(2,0xffc844,0.8); ov.strokeRoundedRect(20,H*0.12,W-40,H*0.76,16);
+
+    const t = (x,y,str,sz,col,origin=[0.5,0.5]) =>
+      this.add.text(x,y,str,{fontFamily:'monospace',fontSize:sz+'px',color:col})
+              .setOrigin(...origin).setScrollFactor(0).setDepth(81);
+
+    const cx=W/2;
+    const objs=[ov];
+    objs.push(t(cx, H*0.17, 'HOW TO PLAY', 20, '#ffc844'));
+    objs.push(t(cx, H*0.17+26, '─────────────────', 11, '#553300'));
+
+    const rows = [
+      ['MOVE',    'Drag left side of screen'],
+      ['ATTACK',  'Auto-fires at nearest enemy'],
+      ['◆ ORBS',  'Purple diamonds = XP'],
+      ['LEVEL UP','Fill XP bar, pick 1 upgrade'],
+      ['SURVIVE', 'Last as long as possible'],
+    ];
+    rows.forEach(([label, desc], i) => {
+      const y = H*0.28 + i*68;
+      objs.push(t(cx-10, y,   label, 15, '#ffc844', [1,0.5]));
+      objs.push(t(cx+14, y,   '→',   13, '#664400', [0,0.5]));
+      objs.push(t(cx+28, y,   desc,  12, '#ccbbaa', [0,0.5]));
+    });
+
+    objs.push(t(cx, H*0.72, '─────────────────', 11, '#553300'));
+    objs.push(t(cx, H*0.77, 'Bosses spawn every 2 minutes', 11, '#886644'));
+    objs.push(t(cx, H*0.81, '15 upgrades to discover', 11, '#886644'));
+
+    const tap=t(cx, H*0.87, 'TAP TO BEGIN', 17, '#ffc844');
+    objs.push(tap);
+    this.tweens.add({targets:tap, alpha:{from:1,to:0.3}, duration:600, yoyo:true, repeat:-1});
+
+    const zone=this.add.zone(cx,H/2,W,H).setScrollFactor(0).setDepth(82).setInteractive();
+    zone.on('pointerdown',()=>{
+      objs.forEach(o=>o.destroy()); zone.destroy();
+      this.tutorialOn=false;
+    });
+  }
+
   // ── Game over ─────────────────────────────
   _die() {
     if (this.gameOver) return;
@@ -768,7 +818,9 @@ class GameScene extends Phaser.Scene {
   _drawHUD() {
     const W=this.scale.width, H=this.scale.height, g=this.hudGfx;
     g.clear();
-    g.fillStyle(0x000000,0.5); g.fillRect(0,0,W,68);
+
+    // Top bar background
+    g.fillStyle(0x000000,0.55); g.fillRect(0,0,W,68);
 
     // HP bar
     const bw=W*0.62, bx=(W-bw)/2, hrat=Math.max(0,this.stats.currentHP/this.stats.maxHP);
@@ -776,28 +828,34 @@ class GameScene extends Phaser.Scene {
     g.fillStyle(hrat>0.5?0x44ff44:hrat>0.25?0xffaa00:0xff2200); g.fillRoundedRect(bx,10,bw*hrat,14,5);
     g.lineStyle(1,0x555555,0.4); g.strokeRoundedRect(bx,10,bw,14,5);
 
-    // XP bar
-    const xbw=W*0.72, xbx=(W-xbw)/2, xrat=this.xpNext>0?Math.min(1,this.xp/this.xpNext):0;
-    g.fillStyle(0x110022); g.fillRoundedRect(xbx,H-26,xbw,7,3);
-    g.fillStyle(0xaa44ff); g.fillRoundedRect(xbx,H-26,xbw*xrat,7,3);
-    g.lineStyle(1,0x553366,0.4); g.strokeRoundedRect(xbx,H-26,xbw,7,3);
+    // Bottom bar background (FIX: was missing, causing overlap)
+    g.fillStyle(0x000000,0.55); g.fillRect(0,H-58,W,58);
 
-    // Boss bar
+    // XP bar — inside bottom strip, clearly separated
+    const xbw=W-20, xbx=10, xrat=this.xpNext>0?Math.min(1,this.xp/this.xpNext):0;
+    g.fillStyle(0x1a0033); g.fillRoundedRect(xbx,H-28,xbw,10,4);
+    g.fillStyle(0xaa44ff); g.fillRoundedRect(xbx,H-28,xbw*xrat,10,4);
+    g.lineStyle(1,0x663399,0.6); g.strokeRoundedRect(xbx,H-28,xbw,10,4);
+    // XP bar label
+    g.fillStyle(0x663399,0.6); g.fillRect(xbx,H-38,30,6);
+
+    // Boss bar — above bottom strip
     if (this.bossBarOn && this.bossEnemy?.active) {
       const bossHP=this.bossEnemy.getData('hp'), bossMHP=this.bossEnemy.getData('maxHp');
-      const brat=Math.max(0,bossHP/bossMHP), bbw=W*0.72, bbx=(W-bbw)/2;
-      g.fillStyle(0x220000); g.fillRoundedRect(bbx,H-62,bbw,11,5);
-      g.fillStyle(0xff2200); g.fillRoundedRect(bbx,H-62,bbw*brat,11,5);
-      g.lineStyle(1,0xff4400,0.7); g.strokeRoundedRect(bbx,H-62,bbw,11,5);
+      const brat=Math.max(0,bossHP/bossMHP), bbw=W-20, bbx=10;
+      g.fillStyle(0x1a0000,0.85); g.fillRoundedRect(bbx,H-100,bbw,14,5);
+      g.fillStyle(0xff2200); g.fillRoundedRect(bbx,H-100,bbw*brat,14,5);
+      g.lineStyle(1,0xff4400,0.8); g.strokeRoundedRect(bbx,H-100,bbw,14,5);
       this.txtBoss.setVisible(true).setText(`DEMON LORD  ${Math.ceil(bossHP)} / ${Math.ceil(bossMHP)}`);
     } else { this.txtBoss.setVisible(false); }
 
     const m=Math.floor(this.elapsed/60), s=Math.floor(this.elapsed%60);
-    this.txtHP.setText(`HP: ${Math.ceil(this.stats.currentHP)} / ${this.stats.maxHP}`);
+    this.txtHP.setText(`HP  ${Math.ceil(this.stats.currentHP)} / ${this.stats.maxHP}`);
     this.txtTimer.setText(`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
     this.txtKills.setText(`KILLS: ${this.kills}`);
     this.txtDiff.setText(this.wave.diffName());
-    this.txtLevel.setText(`LVL ${this.level}  ${this.xp} / ${this.xpNext} XP`);
+    this.txtLevel.setText(`LVL ${this.level}`);
+    this.txtXPVal.setText(`${this.xp} / ${this.xpNext} XP`);
   }
 
   // ── Main update ───────────────────────────
@@ -805,8 +863,8 @@ class GameScene extends Phaser.Scene {
     if (this.gameOver) return;
     const dt=delta/1000;
 
-    // FIX: pause game timer and wave spawning during upgrade screen
-    if (!this.upgradeOn) {
+    // Pause game timer and wave spawning during upgrade or tutorial
+    if (!this.upgradeOn && !this.tutorialOn) {
       this.elapsed+=dt;
       this.wave.update(dt);
     }
@@ -830,8 +888,8 @@ class GameScene extends Phaser.Scene {
       this.facingRight=tgt.x>=this.player.x;
     }
 
-    // Shoot (blocked during upgrade)
-    if (!this.upgradeOn) {
+    // Shoot (blocked during upgrade and tutorial)
+    if (!this.upgradeOn && !this.tutorialOn) {
       this.shootTimer-=dt;
       if (this.shootTimer<=0) { this.shootTimer=this.stats.fireRate; this._shoot(); }
     }
@@ -841,8 +899,8 @@ class GameScene extends Phaser.Scene {
 
     this._updateBlades(dt);
 
-    // Enemies (also paused during upgrade)
-    if (!this.upgradeOn) {
+    // Enemies (also paused during upgrade and tutorial)
+    if (!this.upgradeOn && !this.tutorialOn) {
       const px=this.player.x, py=this.player.y;
       this.grpEnemies.getChildren().forEach(e=>{
         if (!e.active) return;
@@ -949,6 +1007,8 @@ new Phaser.Game({
   type: Phaser.AUTO,
   width: 390, height: 844,
   backgroundColor: '#0a0808',
+  // FIX: render at native screen resolution so it's sharp on high-DPI phones
+  resolution: window.devicePixelRatio || 1,
   physics: { default:'arcade', arcade:{ debug:false, gravity:{x:0,y:0} } },
   scene: [MenuScene, GameScene, GameOverScene],
   scale: { mode:Phaser.Scale.FIT, autoCenter:Phaser.Scale.CENTER_BOTH },
