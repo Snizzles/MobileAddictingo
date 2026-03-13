@@ -52,7 +52,7 @@ const Sound = new class {
       osc.frequency.exponentialRampToValueAtTime(Math.max(f1,10), ctx.currentTime + dur);
       g.gain.setValueAtTime(amp * 0.12, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-      osc.start(); osc.stop(ctx.currentTime + dur + 0.01);
+      osc.start(); osc.stop(ctx.currentTime + dur + 0.05);
     } catch(e) {}
   }
   _noise(dur, amp) {
@@ -60,13 +60,13 @@ const Sound = new class {
     try {
       const ctx = this._ctx, n = Math.ceil(ctx.sampleRate * dur);
       const buf = ctx.createBuffer(1, n, ctx.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i=0;i<n;i++) d[i] = Math.random()*2-1;
+      const data = buf.getChannelData(0);
+      for (let i=0;i<n;i++) data[i] = Math.random()*2-1;
       const src = ctx.createBufferSource(), g = ctx.createGain();
       src.buffer = buf; src.connect(g); g.connect(ctx.destination);
       g.gain.setValueAtTime(amp*0.08, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
-      src.start(); src.stop(ctx.currentTime + dur + 0.01);
+      src.start(); src.stop(ctx.currentTime + dur + 0.05);
     } catch(e) {}
   }
   shoot()     { if(!this._ok('shoot',80))   return; this._tone(900,400,0.08,0.6,'square'); }
@@ -93,34 +93,34 @@ class PlayerStats {
 }
 
 const UPGRADES = [
-  { id:'damage',    name:'SHARPENED BLADE',   desc:'+25% damage',          color:'#ff5555', apply:s=>{s.damage*=1.25;} },
-  { id:'firerate',  name:'SWIFT STRIKES',     desc:'Fire 20% faster',      color:'#ff9944', apply:s=>{s.fireRate*=0.8;} },
-  { id:'multishot', name:'TWIN SHOT',         desc:'+1 bullet per shot',   color:'#ffcc44', apply:s=>{s.bulletCount++;} },
-  { id:'speed',     name:'SHADOW STEP',       desc:'+20% move speed',      color:'#44aaff', apply:s=>{s.moveSpeed*=1.2;} },
-  { id:'maxhp',     name:'IRON CONSTITUTION', desc:'+40 max HP',           color:'#44ff88', apply:s=>{s.maxHP+=40;s.currentHP=Math.min(s.currentHP+40,s.maxHP);} },
-  { id:'regen',     name:'LIFE DRAIN',        desc:'+2 HP/sec regen',      color:'#33dd66', apply:s=>{s.hpRegen+=2;} },
-  { id:'armor',     name:'DUNGEON PLATE',     desc:'-3 damage taken',      color:'#aaaaaa', apply:s=>{s.armor+=3;} },
-  { id:'xpradius',  name:'SOUL MAGNET',       desc:'+60% XP pickup range', color:'#cc88ff', apply:s=>{s.xpRadius*=1.6;} },
-  { id:'homing',    name:'GUIDED WRATH',      desc:'Bullets home in',      color:'#ff88cc', apply:s=>{s.homing=true;} },
-  { id:'piercing',  name:'PHANTOM EDGE',      desc:'Bullets pierce enemies',color:'#88ffff', apply:s=>{s.piercing=true;} },
-  { id:'orbital',   name:'ORBITAL BLADES',    desc:'+1 orbiting blade',    color:'#ffffff', apply:s=>{s.orbitalBlades++;} },
-  { id:'bspeed',    name:'LIGHTNING BOLTS',   desc:'+30% bullet speed',    color:'#ffff44', apply:s=>{s.bulletSpeed*=1.3;} },
-  { id:'area',      name:'WIDE SWING',        desc:'+30% bullet size',     color:'#ff6688', apply:s=>{s.areaMultiplier*=1.3;} },
-  { id:'heal',      name:'DUNGEON SHRINE',    desc:'Restore 60 HP',        color:'#00ff88', apply:s=>{s.currentHP=Math.min(s.currentHP+60,s.maxHP);} },
-  { id:'berserk',   name:'BERSERKER RAGE',    desc:'+50% damage',          color:'#ff2222', apply:s=>{s.damage*=1.5;} },
+  { id:'damage',    name:'SHARPENED BLADE',   desc:'+25% damage',           color:'#ff5555', apply:s=>{s.damage*=1.25;} },
+  { id:'firerate',  name:'SWIFT STRIKES',     desc:'Fire 20% faster',       color:'#ff9944', apply:s=>{s.fireRate*=0.8;} },
+  { id:'multishot', name:'TWIN SHOT',         desc:'+1 bullet per shot',    color:'#ffcc44', apply:s=>{s.bulletCount++;} },
+  { id:'speed',     name:'SHADOW STEP',       desc:'+20% move speed',       color:'#44aaff', apply:s=>{s.moveSpeed*=1.2;} },
+  { id:'maxhp',     name:'IRON CONSTITUTION', desc:'+40 max HP',            color:'#44ff88', apply:s=>{s.maxHP+=40;s.currentHP=Math.min(s.currentHP+40,s.maxHP);} },
+  { id:'regen',     name:'LIFE DRAIN',        desc:'+2 HP/sec regen',       color:'#33dd66', apply:s=>{s.hpRegen+=2;} },
+  { id:'armor',     name:'DUNGEON PLATE',     desc:'-3 damage taken',       color:'#aaaaaa', apply:s=>{s.armor+=3;} },
+  { id:'xpradius',  name:'SOUL MAGNET',       desc:'+60% XP pickup range',  color:'#cc88ff', apply:s=>{s.xpRadius*=1.6;} },
+  { id:'homing',    name:'GUIDED WRATH',      desc:'Bullets home in',       color:'#ff88cc', apply:s=>{s.homing=true;} },
+  { id:'piercing',  name:'PHANTOM EDGE',      desc:'Bullets pierce enemies', color:'#88ffff', apply:s=>{s.piercing=true;} },
+  { id:'orbital',   name:'ORBITAL BLADES',    desc:'+1 orbiting blade',     color:'#ffffff', apply:s=>{s.orbitalBlades++;} },
+  { id:'bspeed',    name:'LIGHTNING BOLTS',   desc:'+30% bullet speed',     color:'#ffff44', apply:s=>{s.bulletSpeed*=1.3;} },
+  { id:'area',      name:'WIDE SWING',        desc:'+30% bullet size',      color:'#ff6688', apply:s=>{s.areaMultiplier*=1.3;} },
+  { id:'heal',      name:'DUNGEON SHRINE',    desc:'Restore 60 HP',         color:'#00ff88', apply:s=>{s.currentHP=Math.min(s.currentHP+60,s.maxHP);} },
+  { id:'berserk',   name:'BERSERKER RAGE',    desc:'+50% damage',           color:'#ff2222', apply:s=>{s.damage*=1.5;} },
 ];
 
 // ─────────────────────────────────────────────
 //  ENEMY CONFIGS
 // ─────────────────────────────────────────────
 const ENEMY_CFG = {
-  grunt:    { hp:30,   speed:85,  size:12, color:'#ccccaa', xp:5,  dmg:8,  name:'Skeleton'   },
-  speeder:  { hp:15,   speed:155, size:9,  color:'#88aaff', xp:7,  dmg:5,  name:'Wraith'     },
-  tank:     { hp:130,  speed:42,  size:20, color:'#889966', xp:20, dmg:15, name:'Golem'      },
-  shooter:  { hp:40,   speed:55,  size:13, color:'#9944cc', xp:15, dmg:10, name:'Necromancer'},
-  splitter: { hp:55,   speed:58,  size:16, color:'#44cc66', xp:10, dmg:6,  name:'Slime'      },
-  sprinter: { hp:12,   speed:185, size:7,  color:'#66ff88', xp:3,  dmg:4,  name:'Slimeling'  },
-  boss:     { hp:1400, speed:58,  size:32, color:'#ff2200', xp:250,dmg:22, name:'Demon Lord'  },
+  grunt:    { hp:30,   speed:85,  size:12, color:'#ccccaa', xp:5,   dmg:8,  name:'Skeleton'    },
+  speeder:  { hp:15,   speed:155, size:9,  color:'#88aaff', xp:7,   dmg:5,  name:'Wraith'      },
+  tank:     { hp:130,  speed:42,  size:20, color:'#889966', xp:20,  dmg:15, name:'Golem'       },
+  shooter:  { hp:40,   speed:55,  size:13, color:'#9944cc', xp:15,  dmg:10, name:'Necromancer' },
+  splitter: { hp:55,   speed:58,  size:16, color:'#44cc66', xp:10,  dmg:6,  name:'Slime'       },
+  sprinter: { hp:12,   speed:185, size:7,  color:'#66ff88', xp:3,   dmg:4,  name:'Slimeling'   },
+  boss:     { hp:1400, speed:58,  size:32, color:'#ff2200', xp:250, dmg:22, name:'Demon Lord'  },
 };
 
 // ─────────────────────────────────────────────
@@ -168,7 +168,7 @@ class VirtualJoystick {
     this.scene = scene; this.active = false;
     this.baseX=0; this.baseY=0; this.thumbX=0; this.thumbY=0;
     this.dx=0; this.dy=0; this.magnitude=0;
-    this.baseR=58; this.thumbR=24; this._ptr=null;
+    this.baseR=60; this.thumbR=24; this._ptr=null;
     this.gfx = scene.add.graphics().setScrollFactor(0).setDepth(100);
   }
   down(ptr) {
@@ -181,12 +181,17 @@ class VirtualJoystick {
     if (this._ptr!==ptr) return;
     const dx=ptr.x-this.baseX, dy=ptr.y-this.baseY, d=Math.sqrt(dx*dx+dy*dy);
     const cl=Math.min(d,this.baseR);
-    if (d>0.5) { this.dx=dx/d; this.dy=dy/d; this.magnitude=cl/this.baseR; }
-    else        { this.dx=0;    this.dy=0;    this.magnitude=0; }
+    // Dead zone of 8px to avoid accidental micro-movements
+    if (d>8) { this.dx=dx/d; this.dy=dy/d; this.magnitude=cl/this.baseR; }
+    else      { this.dx=0;   this.dy=0;    this.magnitude=0; }
     this.thumbX=this.baseX+this.dx*cl; this.thumbY=this.baseY+this.dy*cl; this._draw();
   }
   up(ptr) {
     if (this._ptr!==ptr) return;
+    this._ptr=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
+  }
+  release() {
+    // Force-release regardless of which pointer holds it
     this._ptr=null; this.active=false; this.dx=0; this.dy=0; this.magnitude=0; this._draw();
   }
   _draw() {
@@ -223,7 +228,7 @@ class MenuScene extends Phaser.Scene {
       btn.lineStyle(2,hover?0xffd866:0xffc844,1);  btn.strokeRoundedRect(bx-bw/2,by-bh/2,bw,bh,10);
     };
     drawBtn(false);
-    this.add.text(bx,by,'⚔  ENTER DUNGEON',{ fontFamily:'monospace', fontSize:'18px', fontStyle:'bold', color:'#ffc844' }).setOrigin(0.5);
+    this.add.text(bx,by,'ENTER DUNGEON',{ fontFamily:'monospace', fontSize:'18px', fontStyle:'bold', color:'#ffc844' }).setOrigin(0.5);
     const zone=this.add.zone(bx,by,bw,bh).setInteractive();
     zone.on('pointerover',()=>drawBtn(true)).on('pointerout',()=>drawBtn(false));
     zone.on('pointerdown',()=>{
@@ -232,17 +237,21 @@ class MenuScene extends Phaser.Scene {
       this.time.delayedCall(300,()=>this.scene.start('Game'));
     });
 
-    this.add.text(W/2,H-18,'v1.0  •  VOID SURGE',{ fontFamily:'monospace', fontSize:'11px', color:'#443322' }).setOrigin(0.5);
+    this.add.text(W/2,H-18,'v1.1  VOID SURGE',{ fontFamily:'monospace', fontSize:'11px', color:'#443322' }).setOrigin(0.5);
     this.cameras.main.fadeIn(400);
   }
   _drawBg(W,H) {
-    const g=this.add.graphics(); g.fillStyle(0x0c0a08); g.fillRect(0,0,W,H);
-    const bw=48, bh=20, rows=Math.ceil(H/bh)+1, cols=Math.ceil(W/bw)+2;
-    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
-      const ox=(r%2)*(bw/2), x=c*bw-ox, y=r*bh;
-      const s=0x161210+Math.floor(Math.random()*5)*0x020101;
-      g.fillStyle(s); g.fillRect(x+1,y+1,bw-2,bh-2);
+    // Bake brick pattern into a texture (only generate once globally)
+    if (!this.textures.exists('bricks_menu')) {
+      const g=this.make.graphics({x:0,y:0,add:false});
+      const shades=[0x181412,0x1a1610,0x1c1812,0x161210,0x1e1a14];
+      g.fillStyle(0x0c0a08); g.fillRect(0,0,96,40);
+      const bw=48,bh=20;
+      for (let c=0;c<2;c++) { g.fillStyle(shades[(c*3)%5]); g.fillRect(c*bw+1,1,bw-2,bh-2); }
+      for (let c=-1;c<3;c++) { g.fillStyle(shades[(c+3)%5]); g.fillRect(c*bw+bw/2+1,bh+1,bw-2,bh-2); }
+      g.generateTexture('bricks_menu',96,40); g.destroy();
     }
+    this.add.tileSprite(0,0,W,H,'bricks_menu').setOrigin(0,0);
   }
   _torches(W,H) {
     [[28,75],[W-28,75],[28,H-75],[W-28,H-75]].forEach(([tx,ty])=>{
@@ -260,17 +269,26 @@ class MenuScene extends Phaser.Scene {
 class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
 
-  preload() {
-    // Generate a 4x4 white pixel texture for physics bodies
-    const g=this.make.graphics({x:0,y:0,add:false});
-    g.fillStyle(0xffffff); g.fillRect(0,0,4,4);
-    g.generateTexture('px',4,4); g.destroy();
-  }
-
   create() {
     Sound.init();
     const W=this.scale.width, H=this.scale.height;
     this.WORLD = 2800;
+
+    // ── Generate shared textures (only once) ──
+    if (!this.textures.exists('px')) {
+      const g=this.make.graphics({x:0,y:0,add:false});
+      g.fillStyle(0xffffff); g.fillRect(0,0,4,4);
+      g.generateTexture('px',4,4); g.destroy();
+    }
+    if (!this.textures.exists('bricks')) {
+      const g=this.make.graphics({x:0,y:0,add:false});
+      const shades=[0x181412,0x1a1610,0x1c1812,0x161210,0x1e1a14,0x201c16];
+      g.fillStyle(0x0c0a08); g.fillRect(0,0,96,40);
+      const bw=48,bh=20;
+      for (let c=0;c<2;c++) { g.fillStyle(shades[c*2%6]); g.fillRect(c*bw+1,1,bw-2,bh-2); }
+      for (let c=-1;c<3;c++) { g.fillStyle(shades[(c+4)%6]); g.fillRect(c*bw+bw/2+1,bh+1,bw-2,bh-2); }
+      g.generateTexture('bricks',96,40); g.destroy();
+    }
 
     // ── State ──
     this.stats       = new PlayerStats();
@@ -279,6 +297,7 @@ class GameScene extends Phaser.Scene {
     this.level       = 1;
     this.xp          = 0;
     this.xpNext      = xpToLevel(1);
+    this.pendingLevels = 0;   // queued level-ups waiting for upgrade UI to close
     this.gameOver    = false;
     this.upgradeOn   = false;
     this.invTimer    = 0;
@@ -288,7 +307,7 @@ class GameScene extends Phaser.Scene {
     this.facingRight = true;
     this.weaponAngle = 0;
     this.orbAngle    = 0;
-    this.orbBlades   = []; // { angleOffset, r, ox, oy, angle, phys }
+    this.orbBlades   = []; // { angleOffset, r, ox, oy, angle, phys, collider }
     this.upgObjs     = [];
     this.bossEnemy   = null;
     this.bossBarOn   = false;
@@ -296,20 +315,30 @@ class GameScene extends Phaser.Scene {
     // ── Camera ──
     this.cameras.main.setBounds(-this.WORLD/2,-this.WORLD/2,this.WORLD,this.WORLD);
 
-    // ── Graphics layers ──
-    this._buildWorldBg();
+    // ── World background: TileSprite (drawn once, NOT every frame) ──
+    const half=this.WORLD/2;
+    this.add.tileSprite(-half,-half,this.WORLD,this.WORLD,'bricks').setOrigin(0,0).setDepth(0);
+    // Scattered torches — each positioned at its own world location so camera culling works
+    for (let i=0;i<70;i++) {
+      const tx=(Math.random()-0.5)*this.WORLD*0.88, ty=(Math.random()-0.5)*this.WORLD*0.88;
+      const tg=this.add.graphics().setDepth(1).setPosition(tx,ty);
+      tg.fillStyle(0xff6600,0.11); tg.fillCircle(0,0,52);
+      tg.fillStyle(0xffaa00,0.5);  tg.fillCircle(0,0,5);
+      this.tweens.add({ targets:tg, alpha:{from:0.6,to:1}, duration:600+Math.random()*600, yoyo:true, repeat:-1, ease:'Sine.easeInOut' });
+    }
+
+    // ── Graphics layers (cleared & redrawn each frame — entities only, not background) ──
     this.orbGfx    = this.add.graphics().setDepth(3);
     this.entityGfx = this.add.graphics().setDepth(6);
     this.bulletGfx = this.add.graphics().setDepth(9);
     this.playerGfx = this.add.graphics().setDepth(12);
-    this.fxGfx     = this.add.graphics().setDepth(15);
     this.hudGfx    = this.add.graphics().setScrollFactor(0).setDepth(50);
 
     // ── Physics groups ──
-    this.grpBullets   = this.physics.add.group();
-    this.grpEnemyBul  = this.physics.add.group();
-    this.grpEnemies   = this.physics.add.group();
-    this.grpOrbs      = this.physics.add.group();
+    this.grpBullets  = this.physics.add.group();
+    this.grpEnemyBul = this.physics.add.group();
+    this.grpEnemies  = this.physics.add.group();
+    this.grpOrbs     = this.physics.add.group();
 
     // ── Player physics body ──
     this.player = this.physics.add.image(0,0,'px').setAlpha(0.001);
@@ -334,44 +363,31 @@ class GameScene extends Phaser.Scene {
 
     // ── Input ──
     this.input.addPointer(2);
-    this.input.on('pointerdown', p => { if (!this.upgradeOn && p.x < W*0.55) this.joy.down(p); });
-    this.input.on('pointermove', p => this.joy.move(p));
-    this.input.on('pointerup',   p => this.joy.up(p));
+    this.input.on('pointerdown', p => {
+      if (this.upgradeOn) return;       // block all input during upgrade except card zones
+      if (p.x < W*0.55) this.joy.down(p);
+    });
+    this.input.on('pointermove', p => {
+      if (this.upgradeOn) return;
+      this.joy.move(p);
+    });
+    this.input.on('pointerup', p => this.joy.up(p));
 
     this.cameras.main.startFollow(this.player,true,0.1,0.1);
     this.cameras.main.fadeIn(400);
   }
 
-  // ── World background ──────────────────────
-  _buildWorldBg() {
-    const g=this.add.graphics().setDepth(0);
-    const half=this.WORLD/2;
-    g.fillStyle(0x0c0a08); g.fillRect(-half,-half,this.WORLD,this.WORLD);
-    const bw=48,bh=20,cols=Math.ceil(this.WORLD/bw)+2,rows=Math.ceil(this.WORLD/bh)+2;
-    for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) {
-      const ox=(r%2)*(bw/2), x=-half+c*bw-ox, y=-half+r*bh;
-      g.fillStyle(0x161210+Math.floor(Math.random()*5)*0x020101);
-      g.fillRect(x+1,y+1,bw-2,bh-2);
-    }
-    // Scattered torches
-    for (let i=0;i<70;i++) {
-      const tx=(Math.random()-0.5)*this.WORLD*0.88, ty=(Math.random()-0.5)*this.WORLD*0.88;
-      const tg=this.add.graphics().setDepth(1);
-      tg.fillStyle(0xff6600,0.11); tg.fillCircle(tx,ty,52);
-      tg.fillStyle(0xffaa00,0.5);  tg.fillCircle(tx,ty,5);
-      this.tweens.add({ targets:tg, alpha:{from:0.6,to:1}, duration:600+Math.random()*600, yoyo:true, repeat:-1, ease:'Sine.easeInOut' });
-    }
-  }
-
   // ── HUD texts (scroll-fixed) ──────────────
   _buildHUDTexts(W,H) {
-    const ts = (x,y,str,sz,col) => this.add.text(x,y,str,{ fontFamily:'monospace', fontSize:sz+'px', color:col }).setScrollFactor(0).setDepth(51);
-    this.txtHP    = ts(W/2, 14, '',       13, '#ff5544').setOrigin(0.5);
-    this.txtTimer = ts(W/2, 52, '00:00',  16, '#ffaa44').setOrigin(0.5);
-    this.txtKills = ts(W-8, 8,  'KILLS:0',12, '#aaaaaa').setOrigin(1,0);
-    this.txtDiff  = ts(W-8, 24, 'ROOKIE', 11, '#886644').setOrigin(1,0);
-    this.txtLevel = ts(W/2, H-14,'LVL 1', 12, '#cc88ff').setOrigin(0.5);
-    this.txtBoss  = ts(W/2, H-76,'',      13, '#ff4400').setOrigin(0.5).setVisible(false);
+    const ts = (x,y,str,sz,col) =>
+      this.add.text(x,y,str,{ fontFamily:'monospace', fontSize:sz+'px', color:col })
+              .setScrollFactor(0).setDepth(51);
+    this.txtHP    = ts(W/2, 14, '',        13, '#ff5544').setOrigin(0.5);
+    this.txtTimer = ts(W/2, 52, '00:00',   16, '#ffaa44').setOrigin(0.5);
+    this.txtKills = ts(W-8, 8,  'KILLS:0', 12, '#aaaaaa').setOrigin(1,0);
+    this.txtDiff  = ts(W-8, 24, 'ROOKIE',  11, '#886644').setOrigin(1,0);
+    this.txtLevel = ts(W/2, H-14,'LVL 1',  12, '#cc88ff').setOrigin(0.5);
+    this.txtBoss  = ts(W/2, H-76,'',       13, '#ff4400').setOrigin(0.5).setVisible(false);
   }
 
   // ── Spawn helpers ─────────────────────────
@@ -387,17 +403,22 @@ class GameScene extends Phaser.Scene {
     const e=this.physics.add.image(wx,wy,'px').setAlpha(0.001);
     e.body.setSize(cfg.size*2,cfg.size*2);
     e.setDataEnabled();
-    e.setData({ type, hp:cfg.hp*hpMult, maxHp:cfg.hp*hpMult, speed:cfg.speed, dmg:cfg.dmg, xp:cfg.xp, sCooldown:2+Math.random()*2, cCooldown:0 });
+    e.setData({ type, hp:cfg.hp*hpMult, maxHp:cfg.hp*hpMult, speed:cfg.speed,
+                dmg:cfg.dmg, xp:cfg.xp, sCooldown:2+Math.random()*2, cCooldown:0 });
     this.grpEnemies.add(e);
     return e;
   }
 
   _spawnBoss() {
     const a=Math.random()*Math.PI*2;
-    const b=this._spawnEnemy('boss', this.player.x+Math.cos(a)*520, this.player.y+Math.sin(a)*520, 1+this.wave.elapsed/60);
+    const b=this._spawnEnemy('boss',
+      this.player.x+Math.cos(a)*520, this.player.y+Math.sin(a)*520,
+      1+this.wave.elapsed/60);
     this.bossEnemy=b; this.bossBarOn=true; Sound.bossSpawn();
     const W=this.scale.width, H=this.scale.height;
-    const w=this.add.text(W/2,H/2,'⚠  DEMON LORD APPROACHES  ⚠',{ fontFamily:'monospace', fontSize:'17px', color:'#ff2200', stroke:'#000', strokeThickness:4 }).setOrigin(0.5).setScrollFactor(0).setDepth(60);
+    const w=this.add.text(W/2,H*0.45,'DEMON LORD APPROACHES',{
+      fontFamily:'monospace', fontSize:'18px', color:'#ff2200',
+      stroke:'#000', strokeThickness:4 }).setOrigin(0.5).setScrollFactor(0).setDepth(60);
     this.tweens.add({ targets:w, alpha:0, duration:2500, onComplete:()=>w.destroy() });
   }
 
@@ -423,10 +444,11 @@ class GameScene extends Phaser.Scene {
       const a=angle+(this.stats.bulletCount>1 ? -spread/2+i*(spread/(this.stats.bulletCount-1)) : 0);
       const s=this.stats.bulletSpeed;
       const b=this.physics.add.image(px,py,'px').setAlpha(0.001);
-      b.body.setSize(Math.round(5*this.stats.areaMultiplier)*2, Math.round(5*this.stats.areaMultiplier)*2);
+      const sz=Math.max(3, Math.round(5*this.stats.areaMultiplier));
+      b.body.setSize(sz*2,sz*2);
       b.body.setVelocity(Math.cos(a)*s, Math.sin(a)*s);
       b.setDataEnabled();
-      b.setData({ dmg:this.stats.damage, pierce:this.stats.piercing, homing:this.stats.homing, angle:a, size:Math.round(5*this.stats.areaMultiplier) });
+      b.setData({ dmg:this.stats.damage, pierce:this.stats.piercing, size:sz });
       this.grpBullets.add(b);
       this.time.delayedCall(2200,()=>{ if(b.active) b.destroy(); });
     }
@@ -444,22 +466,31 @@ class GameScene extends Phaser.Scene {
   }
 
   // ── Orbital blades ────────────────────────
+  // FIX: store collider refs and destroy them; only rebuild when count changes
   _rebuildBlades() {
-    this.orbBlades.forEach(bl=>{ if(bl.phys?.active) bl.phys.destroy(); });
+    const needed=this.stats.orbitalBlades;
+    if (this.orbBlades.length === needed) return; // no change, skip rebuild
+
+    // Destroy old blades and their registered colliders
+    this.orbBlades.forEach(bl=>{
+      if (bl.collider) this.physics.world.removeCollider(bl.collider);
+      if (bl.phys?.active) bl.phys.destroy();
+    });
     this.orbBlades=[];
-    const n=this.stats.orbitalBlades;
-    for (let i=0;i<n;i++) {
+
+    for (let i=0;i<needed;i++) {
       const phys=this.physics.add.image(0,0,'px').setAlpha(0.001);
-      phys.body.setSize(26,8); phys.setDataEnabled(); phys.setData({ cCooldown:0 });
-      const bl={ angleOffset:(i/n)*Math.PI*2, r:55, angle:0, ox:0, oy:0, phys };
-      this.orbBlades.push(bl);
-      this.physics.add.overlap(phys,this.grpEnemies,(ph,e)=>{
-        const cd=ph.getData('cCooldown')||0; if(cd>0||!e.active) return;
+      phys.body.setSize(26,8); phys.setDataEnabled(); phys.setData({ cCooldown:0.5 });
+      const bl={ angleOffset:(i/needed)*Math.PI*2, r:55, angle:0, ox:0, oy:0, phys, collider:null };
+      bl.collider = this.physics.add.overlap(phys,this.grpEnemies,(ph,e)=>{
+        if (!e.active) return;
+        const cd=ph.getData('cCooldown')||0; if(cd>0) return;
         ph.setData('cCooldown',0.5);
         const dmg=8+this.stats.damage*0.3;
         const hp=e.getData('hp')-dmg; e.setData('hp',hp); Sound.enemyHit();
         if(hp<=0) this._killEnemy(e);
       });
+      this.orbBlades.push(bl);
     }
   }
 
@@ -478,13 +509,15 @@ class GameScene extends Phaser.Scene {
   // ── Collision callbacks ───────────────────
   _onBulletHitEnemy(b,e) {
     if (!b.active||!e.active) return;
-    const hp=e.getData('hp')-(b.getData('dmg')||0); e.setData('hp',hp); Sound.enemyHit();
+    const dmg=b.getData('dmg')||0;
+    const hp=(e.getData('hp')||0)-dmg; e.setData('hp',hp); Sound.enemyHit();
     if (!b.getData('pierce')) b.destroy();
     if (hp<=0) this._killEnemy(e);
   }
 
+  // FIX: guard against damage during upgrade screen
   _onEnemyTouchPlayer(e) {
-    if (!e.active||this.invTimer>0) return;
+    if (!e.active||this.invTimer>0||this.upgradeOn) return;
     const cd=e.getData('cCooldown')||0; if(cd>0) return;
     e.setData('cCooldown',0.8); this.invTimer=0.5;
     const dmg=Math.max(1,(e.getData('dmg')||10)-this.stats.armor);
@@ -492,8 +525,9 @@ class GameScene extends Phaser.Scene {
     if (this.stats.currentHP<=0) this._die();
   }
 
+  // FIX: guard against damage during upgrade screen
   _onEnemyBulletHitPlayer(b) {
-    if (!b.active||this.invTimer>0) return;
+    if (!b.active||this.invTimer>0||this.upgradeOn) return;
     this.invTimer=0.3;
     const dmg=Math.max(1,(b.getData('dmg')||12)-this.stats.armor);
     this.stats.currentHP-=dmg; b.destroy(); Sound.playerHit(); this.cameras.main.shake(150,0.007);
@@ -503,14 +537,28 @@ class GameScene extends Phaser.Scene {
   _onXPCollect(o) {
     if (!o.active) return;
     this.xp+=o.getData('xp')||0; o.destroy(); Sound.xpCollect();
-    while (this.xp>=this.xpNext) { this.xp-=this.xpNext; this.level++; this.xpNext=xpToLevel(this.level); this._levelUp(); break; }
+    this._checkLevelUp();
+  }
+
+  // FIX: proper level-up queue — handles multi-level gains correctly
+  _checkLevelUp() {
+    while (this.xp >= this.xpNext) {
+      this.xp -= this.xpNext;
+      this.level++;
+      this.xpNext = xpToLevel(this.level);
+      if (!this.upgradeOn) {
+        this._levelUp();
+        return; // show one upgrade at a time; remainder handled after selection
+      } else {
+        this.pendingLevels++; // queue extra levels
+      }
+    }
   }
 
   _killEnemy(e) {
     if (!e.active) return;
     Sound.enemyDie(); this.kills++;
     const type=e.getData('type'), xpv=e.getData('xp')||5;
-    // Drop XP orbs
     const oc=Math.min(5,Math.ceil(xpv/5));
     for (let i=0;i<oc;i++) {
       const a=Math.random()*Math.PI*2, d=Math.random()*22;
@@ -530,37 +578,65 @@ class GameScene extends Phaser.Scene {
 
   // ── Level up / upgrades ───────────────────
   _levelUp() {
-    Sound.levelUp(); this.upgradeOn=true;
+    Sound.levelUp();
+    this.upgradeOn=true;
+    this.joy.release(); // FIX: release joystick so player stops moving
+
     const W=this.scale.width, H=this.scale.height;
     const ov=this.add.graphics().setScrollFactor(0).setDepth(70);
-    ov.fillStyle(0x000000,0.78); ov.fillRect(0,0,W,H);
-    const t1=this.add.text(W/2,75,`LEVEL ${this.level}!`,{ fontFamily:'monospace', fontSize:'30px', fontStyle:'bold', color:'#ffc844', stroke:'#000', strokeThickness:3 }).setOrigin(0.5).setScrollFactor(0).setDepth(71);
-    const t2=this.add.text(W/2,112,'CHOOSE AN UPGRADE',{ fontFamily:'monospace', fontSize:'13px', color:'#aa8866' }).setOrigin(0.5).setScrollFactor(0).setDepth(71);
+    ov.fillStyle(0x000000,0.80); ov.fillRect(0,0,W,H);
+
+    const label = this.pendingLevels > 0
+      ? `LEVEL ${this.level}!  (+${this.pendingLevels} more)`
+      : `LEVEL ${this.level}!`;
+    const t1=this.add.text(W/2, 70, label,{
+      fontFamily:'monospace', fontSize:'28px', fontStyle:'bold',
+      color:'#ffc844', stroke:'#000', strokeThickness:3
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(71);
+    const t2=this.add.text(W/2,108,'CHOOSE AN UPGRADE',{
+      fontFamily:'monospace', fontSize:'13px', color:'#aa8866'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(71);
+
     const picks=randUpgrades(3);
     this.upgObjs=[ov,t1,t2];
 
     picks.forEach((upg,i)=>{
-      const cx=W/2, cy=190+i*165, cw=W*0.82, ch=135, col=hexColor(upg.color);
+      const cx=W/2, cy=185+i*168, cw=W*0.84, ch=138, col=hexColor(upg.color);
       const card=this.add.graphics().setScrollFactor(0).setDepth(71);
       const drawCard=(hover)=>{
         card.clear();
-        card.fillStyle(hover?0x2a1a0e:0x18100a,0.97); card.fillRoundedRect(cx-cw/2,cy-ch/2,cw,ch,12);
-        card.lineStyle(hover?3:2,col,hover?1:0.85); card.strokeRoundedRect(cx-cw/2,cy-ch/2,cw,ch,12);
+        card.fillStyle(hover?0x2a1a0e:0x18100a,0.97);
+        card.fillRoundedRect(cx-cw/2,cy-ch/2,cw,ch,12);
+        card.lineStyle(hover?3:2,col,hover?1:0.85);
+        card.strokeRoundedRect(cx-cw/2,cy-ch/2,cw,ch,12);
       };
       drawCard(false);
-      const nt=this.add.text(cx,cy-30,upg.name,{ fontFamily:'monospace', fontSize:'17px', fontStyle:'bold', color:upg.color }).setOrigin(0.5).setScrollFactor(0).setDepth(72);
-      const dt=this.add.text(cx,cy+8, upg.desc,{ fontFamily:'monospace', fontSize:'13px', color:'#ccbbaa' }).setOrigin(0.5).setScrollFactor(0).setDepth(72);
+      const nt=this.add.text(cx,cy-28,upg.name,{
+        fontFamily:'monospace', fontSize:'17px', fontStyle:'bold', color:upg.color
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(72);
+      const dt=this.add.text(cx,cy+10,upg.desc,{
+        fontFamily:'monospace', fontSize:'14px', color:'#ccbbaa'
+      }).setOrigin(0.5).setScrollFactor(0).setDepth(72);
       const zone=this.add.zone(cx,cy,cw,ch).setScrollFactor(0).setDepth(73).setInteractive();
       zone.on('pointerover',()=>drawCard(true)).on('pointerout',()=>drawCard(false));
       zone.on('pointerdown',()=>{
-        upg.apply(this.stats); this._clearUpgradeUI(); this._rebuildBlades();
+        upg.apply(this.stats);
+        this._clearUpgradeUI();
+        this._rebuildBlades();
       });
       this.upgObjs.push(card,nt,dt,zone);
     });
   }
 
   _clearUpgradeUI() {
-    this.upgObjs.forEach(o=>o.destroy()); this.upgObjs=[]; this.upgradeOn=false;
+    this.upgObjs.forEach(o=>{ if(o?.active!==false) o.destroy?.(); });
+    this.upgObjs=[];
+    this.upgradeOn=false;
+    // FIX: process any queued level-ups from rapid XP gain
+    if (this.pendingLevels > 0) {
+      this.pendingLevels--;
+      this._levelUp();
+    }
   }
 
   // ── Game over ─────────────────────────────
@@ -586,23 +662,28 @@ class GameScene extends Phaser.Scene {
 
     // XP orbs
     this.grpOrbs.getChildren().forEach(o=>{ if(!o.active) return;
-      const x=o.x,y=o.y;
-      this.orbGfx.fillStyle(0xaa44ff); this.orbGfx.fillTriangle(x,y-7,x-5,y,x,y+7); this.orbGfx.fillTriangle(x,y-7,x+5,y,x,y+7);
-      this.orbGfx.lineStyle(1,0xdd88ff,0.8); this.orbGfx.strokeTriangle(x,y-7,x-5,y,x,y+7); this.orbGfx.strokeTriangle(x,y-7,x+5,y,x,y+7);
+      const x=o.x, y=o.y;
+      this.orbGfx.fillStyle(0xaa44ff);
+      this.orbGfx.fillTriangle(x,y-7,x-5,y,x,y+7);
+      this.orbGfx.fillTriangle(x,y-7,x+5,y,x,y+7);
+      this.orbGfx.lineStyle(1,0xdd88ff,0.8);
+      this.orbGfx.strokeTriangle(x,y-7,x-5,y,x,y+7);
+      this.orbGfx.strokeTriangle(x,y-7,x+5,y,x,y+7);
       this.orbGfx.fillStyle(0xffffff,0.55); this.orbGfx.fillCircle(x,y-2,2);
     });
 
     // Enemies
     const eg=this.entityGfx;
     this.grpEnemies.getChildren().forEach(e=>{ if(!e.active) return;
-      const x=e.x,y=e.y, type=e.getData('type'), cfg=ENEMY_CFG[type]; if(!cfg) return;
+      const x=e.x, y=e.y, type=e.getData('type'), cfg=ENEMY_CFG[type]; if(!cfg) return;
       const sz=cfg.size, hp=e.getData('hp'), mhp=e.getData('maxHp');
       eg.fillStyle(0x000000,0.22); eg.fillEllipse(x,y+sz*0.8,sz*1.8,sz*0.55);
       const col=hexColor(cfg.color);
       if (type==='boss') {
         eg.fillStyle(col); eg.fillTriangle(x,y-sz,x-sz*0.85,y+sz*0.8,x+sz*0.85,y+sz*0.8);
         eg.fillCircle(x,y-sz*0.2,sz*0.72); eg.lineStyle(2,0xff6600,1); eg.strokeCircle(x,y-sz*0.2,sz*0.72);
-        eg.lineStyle(3,0x991100,1); eg.beginPath(); eg.moveTo(x-13,y-sz*0.55); eg.lineTo(x-22,y-sz); eg.strokePath();
+        eg.lineStyle(3,0x991100,1);
+        eg.beginPath(); eg.moveTo(x-13,y-sz*0.55); eg.lineTo(x-22,y-sz); eg.strokePath();
         eg.beginPath(); eg.moveTo(x+13,y-sz*0.55); eg.lineTo(x+22,y-sz); eg.strokePath();
         eg.fillStyle(0xffff00); eg.fillCircle(x-9,y-sz*0.25,4); eg.fillCircle(x+9,y-sz*0.25,4);
         eg.fillStyle(0xff0000); eg.fillCircle(x-9,y-sz*0.25,2); eg.fillCircle(x+9,y-sz*0.25,2);
@@ -622,17 +703,17 @@ class GameScene extends Phaser.Scene {
         eg.fillStyle(0xffffff); eg.fillCircle(x-sz*0.3,y-sz*0.1,sz*0.27); eg.fillCircle(x+sz*0.3,y-sz*0.1,sz*0.27);
         eg.fillStyle(0x000000); eg.fillCircle(x-sz*0.3,y-sz*0.1,sz*0.13); eg.fillCircle(x+sz*0.3,y-sz*0.1,sz*0.13);
       } else if (type==='speeder') {
-        eg.fillStyle(col,0.7); eg.fillTriangle(x,y-sz*1.1,x-sz,y+sz*0.8,x+sz,y+sz*0.8);
+        eg.fillStyle(col,0.75); eg.fillTriangle(x,y-sz*1.1,x-sz,y+sz*0.8,x+sz,y+sz*0.8);
         eg.fillCircle(x,y-sz*0.4,sz*0.72); eg.lineStyle(1,0x6688ff,0.6); eg.strokeCircle(x,y-sz*0.4,sz*0.72);
         eg.fillStyle(0xeeeeff); eg.fillCircle(x-sz*0.28,y-sz*0.5,sz*0.22); eg.fillCircle(x+sz*0.28,y-sz*0.5,sz*0.22);
-      } else { // grunt
+      } else { // grunt / skeleton
         eg.fillStyle(col); eg.fillCircle(x,y-sz*0.3,sz*0.9);
         eg.fillRect(x-sz*0.5,y+sz*0.2,sz,sz*0.7);
         eg.lineStyle(1.5,0x888877,0.8); eg.strokeCircle(x,y-sz*0.3,sz*0.9);
         eg.fillStyle(0x000000); eg.fillCircle(x-sz*0.3,y-sz*0.3,sz*0.22); eg.fillCircle(x+sz*0.3,y-sz*0.3,sz*0.22);
       }
-      // HP bar
-      if (hp<mhp) {
+      // HP bar (only when damaged)
+      if (hp < mhp) {
         const bw=sz*2.6, rat=Math.max(0,hp/mhp);
         eg.fillStyle(0x440000); eg.fillRect(x-bw/2,y-sz-10,bw,4);
         eg.fillStyle(0x44ff44); eg.fillRect(x-bw/2,y-sz-10,bw*rat,4);
@@ -652,7 +733,7 @@ class GameScene extends Phaser.Scene {
       this.bulletGfx.fillStyle(0xff88ff,0.5); this.bulletGfx.fillCircle(b.x,b.y,3);
     });
 
-    // Player
+    // ── Player ──
     const px=this.player.x, py=this.player.y;
     const pg=this.playerGfx;
     const amber=0xffc844, amberD=0xcc8822, outline=0x3a1a00;
@@ -665,23 +746,23 @@ class GameScene extends Phaser.Scene {
     pg.fillStyle(amberD); pg.fillRect(px-11,py-5,5,10); pg.fillRect(px+6,py-5,5,10);
     pg.fillStyle(amber); pg.fillCircle(px,py-13,8); pg.lineStyle(1.5,outline,1); pg.strokeCircle(px,py-13,8);
     pg.fillStyle(0x000000); pg.fillCircle(px+dir*3,py-14,2); pg.fillStyle(0xff4400); pg.fillCircle(px+dir*3,py-14,1);
-    // Weapon
     const wc=Math.cos(this.weaponAngle), ws=Math.sin(this.weaponAngle);
     pg.lineStyle(3,0xffd866,1); pg.beginPath(); pg.moveTo(px+wc*4,py+ws*4); pg.lineTo(px+wc*22,py+ws*22); pg.strokePath();
     pg.fillStyle(0xffffff,0.8); pg.fillCircle(px+wc*22,py+ws*22,2.5);
     // Orbital blades
     for (const bl of this.orbBlades) {
-      const bx=px+bl.ox, by_=py+bl.oy, bc=Math.cos(bl.angle+Math.PI/2), bs=Math.sin(bl.angle+Math.PI/2);
-      pg.lineStyle(2.5,0xaaddff,0.92); pg.beginPath(); pg.moveTo(bx-bc*13,by_-bs*13); pg.lineTo(bx+bc*13,by_+bs*13); pg.strokePath();
+      const bx=px+bl.ox, by_=py+bl.oy;
+      const bc=Math.cos(bl.angle+Math.PI/2), bs=Math.sin(bl.angle+Math.PI/2);
+      pg.lineStyle(2.5,0xaaddff,0.92);
+      pg.beginPath(); pg.moveTo(bx-bc*13,by_-bs*13); pg.lineTo(bx+bc*13,by_+bs*13); pg.strokePath();
       pg.fillStyle(0xcceeff,0.9); pg.fillCircle(bx,by_,3);
     }
-    // Player HP bar
+    // Player HP mini-bar
     const hrat=Math.max(0,this.stats.currentHP/this.stats.maxHP);
     pg.fillStyle(0x440000); pg.fillRect(px-15,py-30,30,4);
     pg.fillStyle(hrat>0.5?0x44ff44:hrat>0.25?0xffaa00:0xff2200); pg.fillRect(px-15,py-30,30*hrat,4);
-
     // Invincibility flicker
-    this.playerGfx.alpha = (this.invTimer>0 && Math.sin(this.invTimer*30)<0) ? 0.28 : 1;
+    this.playerGfx.alpha=(this.invTimer>0 && Math.sin(this.invTimer*30)<0) ? 0.25 : 1;
   }
 
   _drawHUD() {
@@ -703,33 +784,34 @@ class GameScene extends Phaser.Scene {
 
     // Boss bar
     if (this.bossBarOn && this.bossEnemy?.active) {
-      const bh=this.bossEnemy.getData('hp'), bmh=this.bossEnemy.getData('maxHp');
-      const brat=Math.max(0,bh/bmh), bbw=W*0.72, bbx=(W-bbw)/2;
+      const bossHP=this.bossEnemy.getData('hp'), bossMHP=this.bossEnemy.getData('maxHp');
+      const brat=Math.max(0,bossHP/bossMHP), bbw=W*0.72, bbx=(W-bbw)/2;
       g.fillStyle(0x220000); g.fillRoundedRect(bbx,H-62,bbw,11,5);
       g.fillStyle(0xff2200); g.fillRoundedRect(bbx,H-62,bbw*brat,11,5);
       g.lineStyle(1,0xff4400,0.7); g.strokeRoundedRect(bbx,H-62,bbw,11,5);
-      this.txtBoss.setVisible(true).setText(`DEMON LORD — ${Math.ceil(bh)} / ${Math.ceil(bmh)}`);
+      this.txtBoss.setVisible(true).setText(`DEMON LORD  ${Math.ceil(bossHP)} / ${Math.ceil(bossMHP)}`);
     } else { this.txtBoss.setVisible(false); }
 
-    // Texts
     const m=Math.floor(this.elapsed/60), s=Math.floor(this.elapsed%60);
     this.txtHP.setText(`HP: ${Math.ceil(this.stats.currentHP)} / ${this.stats.maxHP}`);
     this.txtTimer.setText(`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`);
     this.txtKills.setText(`KILLS: ${this.kills}`);
     this.txtDiff.setText(this.wave.diffName());
-    this.txtLevel.setText(`LVL ${this.level}  •  ${this.xp} / ${this.xpNext} XP`);
+    this.txtLevel.setText(`LVL ${this.level}  ${this.xp} / ${this.xpNext} XP`);
   }
 
   // ── Main update ───────────────────────────
   update(_, delta) {
     if (this.gameOver) return;
     const dt=delta/1000;
-    this.elapsed+=dt;
 
-    // Wave
-    if (!this.upgradeOn) this.wave.update(dt);
+    // FIX: pause game timer and wave spawning during upgrade screen
+    if (!this.upgradeOn) {
+      this.elapsed+=dt;
+      this.wave.update(dt);
+    }
 
-    // Player movement
+    // Player movement (blocked during upgrade)
     if (this.joy.active && !this.upgradeOn) {
       const spd=this.stats.moveSpeed;
       this.player.body.setVelocity(this.joy.dx*spd*this.joy.magnitude, this.joy.dy*spd*this.joy.magnitude);
@@ -741,46 +823,46 @@ class GameScene extends Phaser.Scene {
     this.player.x=Math.max(-h,Math.min(h,this.player.x));
     this.player.y=Math.max(-h,Math.min(h,this.player.y));
 
-    // Aim at nearest
+    // Aim at nearest enemy
     const tgt=this._nearestEnemy();
-    if (tgt) { this.weaponAngle=Math.atan2(tgt.y-this.player.y,tgt.x-this.player.x); this.facingRight=tgt.x>=this.player.x; }
+    if (tgt) {
+      this.weaponAngle=Math.atan2(tgt.y-this.player.y,tgt.x-this.player.x);
+      this.facingRight=tgt.x>=this.player.x;
+    }
 
-    // Shoot
+    // Shoot (blocked during upgrade)
     if (!this.upgradeOn) {
       this.shootTimer-=dt;
       if (this.shootTimer<=0) { this.shootTimer=this.stats.fireRate; this._shoot(); }
     }
 
-    // Invincibility
     if (this.invTimer>0) this.invTimer-=dt;
+    if (this.stats.hpRegen>0) this.stats.currentHP=Math.min(this.stats.maxHP, this.stats.currentHP+this.stats.hpRegen*dt);
 
-    // HP regen
-    if (this.stats.hpRegen>0) this.stats.currentHP=Math.min(this.stats.maxHP,this.stats.currentHP+this.stats.hpRegen*dt);
-
-    // Orbital blades
     this._updateBlades(dt);
 
-    // Enemies
-    const px=this.player.x, py=this.player.y;
-    this.grpEnemies.getChildren().forEach(e=>{
-      if (!e.active) return;
-      const dx=px-e.x, dy=py-e.y, d=Math.sqrt(dx*dx+dy*dy)||1;
-      const spd=e.getData('speed')||80, type=e.getData('type');
-      const cd=e.getData('cCooldown')||0; if(cd>0) e.setData('cCooldown',Math.max(0,cd-dt));
-      if (type==='shooter') {
-        const range=300;
-        if (d>range*0.75)      e.body.setVelocity((dx/d)*spd,(dy/d)*spd);
-        else if (d<range*0.5)  e.body.setVelocity((-dx/d)*spd*0.6,(-dy/d)*spd*0.6);
-        else                   e.body.setVelocity(0,0);
-        let st=e.getData('sCooldown')-dt;
-        if (st<=0) { st=2.2+Math.random()*1.2; this._spawnEnemyBullet(e.x,e.y); }
-        e.setData('sCooldown',st);
-      } else {
-        e.body.setVelocity(d>1?(dx/d)*spd:0, d>1?(dy/d)*spd:0);
-      }
-      // Cull distant enemies
-      if (d>2200) e.destroy();
-    });
+    // Enemies (also paused during upgrade)
+    if (!this.upgradeOn) {
+      const px=this.player.x, py=this.player.y;
+      this.grpEnemies.getChildren().forEach(e=>{
+        if (!e.active) return;
+        const dx=px-e.x, dy=py-e.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+        const spd=e.getData('speed')||80, type=e.getData('type');
+        const cd=e.getData('cCooldown')||0; if(cd>0) e.setData('cCooldown',Math.max(0,cd-dt));
+        if (type==='shooter') {
+          const range=300;
+          if (d>range*0.75)     e.body.setVelocity((dx/d)*spd,(dy/d)*spd);
+          else if (d<range*0.5) e.body.setVelocity((-dx/d)*spd*0.6,(-dy/d)*spd*0.6);
+          else                  e.body.setVelocity(0,0);
+          let st=(e.getData('sCooldown')||0)-dt;
+          if (st<=0) { st=2.2+Math.random()*1.2; this._spawnEnemyBullet(e.x,e.y); }
+          e.setData('sCooldown',st);
+        } else {
+          e.body.setVelocity(d>1?(dx/d)*spd:0, d>1?(dy/d)*spd:0);
+        }
+        if (d>2200) e.destroy(); // cull distant enemies
+      });
+    }
 
     // Homing bullets
     if (this.stats.homing) {
@@ -792,15 +874,16 @@ class GameScene extends Phaser.Scene {
       });
     }
 
-    // XP orb magnet
+    // XP orb magnet + FIX: cull far orbs
+    const px=this.player.x, py=this.player.y;
     this.grpOrbs.getChildren().forEach(o=>{
       if (!o.active) return;
       const dx=px-o.x, dy=py-o.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+      if (d>1600) { o.destroy(); return; } // FIX: cull stale orbs
       if (d<this.stats.xpRadius) o.body.setVelocity((dx/d)*220,(dy/d)*220);
       else o.body.setVelocity(0,0);
     });
 
-    // Draw everything
     this._drawAll();
     this._drawHUD();
   }
@@ -817,22 +900,41 @@ class GameOverScene extends Phaser.Scene {
     g.fillStyle(0x060305); g.fillRect(0,0,W,H);
     g.fillStyle(0x1a0505,0.85); g.fillRect(0,H*0.1,W,H*0.82);
 
-    this.add.text(W/2,H*0.16,'FALLEN',{ fontFamily:'monospace', fontSize:'58px', fontStyle:'bold', color:'#ff2200', stroke:'#000', strokeThickness:5 }).setOrigin(0.5);
-    this.add.text(W/2,H*0.26,'THE DUNGEON CLAIMED YOUR SOUL',{ fontFamily:'monospace', fontSize:'12px', color:'#664433' }).setOrigin(0.5);
+    this.add.text(W/2,H*0.16,'FALLEN',{
+      fontFamily:'monospace', fontSize:'58px', fontStyle:'bold',
+      color:'#ff2200', stroke:'#000', strokeThickness:5
+    }).setOrigin(0.5);
+    this.add.text(W/2,H*0.26,'THE DUNGEON CLAIMED YOUR SOUL',{
+      fontFamily:'monospace', fontSize:'12px', color:'#664433'
+    }).setOrigin(0.5);
 
     const m=Math.floor(data.elapsed/60), s=Math.floor(data.elapsed%60);
-    const rows=[['TIME SURVIVED',`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`],['ENEMIES SLAIN',String(data.kills)],['LEVEL REACHED',String(data.level)]];
+    const rows=[
+      ['TIME SURVIVED', `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`],
+      ['ENEMIES SLAIN', String(data.kills)],
+      ['LEVEL REACHED', String(data.level)],
+    ];
     rows.forEach(([lbl,val],i)=>{
-      this.add.text(W/2-8,H*0.36+i*58,lbl,{ fontFamily:'monospace', fontSize:'13px', color:'#886644', align:'right' }).setOrigin(1,0.5);
-      this.add.text(W/2+8,H*0.36+i*58,val,{ fontFamily:'monospace', fontSize:'16px', fontStyle:'bold', color:'#ffc844' }).setOrigin(0,0.5);
+      this.add.text(W/2-8,H*0.36+i*58,lbl,{
+        fontFamily:'monospace', fontSize:'13px', color:'#886644', align:'right'
+      }).setOrigin(1,0.5);
+      this.add.text(W/2+8,H*0.36+i*58,val,{
+        fontFamily:'monospace', fontSize:'16px', fontStyle:'bold', color:'#ffc844'
+      }).setOrigin(0,0.5);
     });
 
-    this._btn(W/2,H*0.72,'▶  PLAY AGAIN','#ffc844',()=>{ this.cameras.main.fadeOut(280,0,0,0); this.time.delayedCall(280,()=>this.scene.start('Game')); });
-    this._btn(W/2,H*0.84,'  MAIN MENU','#998866',()=>{ this.cameras.main.fadeOut(280,0,0,0); this.time.delayedCall(280,()=>this.scene.start('Menu')); });
+    this._btn(W/2,H*0.72,'PLAY AGAIN','#ffc844',()=>{
+      this.cameras.main.fadeOut(280,0,0,0);
+      this.time.delayedCall(280,()=>this.scene.start('Game'));
+    });
+    this._btn(W/2,H*0.84,'MAIN MENU','#998866',()=>{
+      this.cameras.main.fadeOut(280,0,0,0);
+      this.time.delayedCall(280,()=>this.scene.start('Menu'));
+    });
     this.cameras.main.fadeIn(400);
   }
   _btn(x,y,lbl,col,fn) {
-    const bw=220,bh=52, g=this.add.graphics(), c=hexColor(col.replace('#',''));
+    const bw=220, bh=52, g=this.add.graphics(), c=hexColor(col.replace('#',''));
     g.fillStyle(0x1a0a00,0.92); g.fillRoundedRect(x-bw/2,y-bh/2,bw,bh,9);
     g.lineStyle(2,c,1); g.strokeRoundedRect(x-bw/2,y-bh/2,bw,bh,9);
     this.add.text(x,y,lbl,{ fontFamily:'monospace', fontSize:'17px', fontStyle:'bold', color:col }).setOrigin(0.5);
