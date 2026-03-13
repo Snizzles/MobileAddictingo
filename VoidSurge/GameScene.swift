@@ -90,49 +90,76 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     private func setupPhysics() {
         physicsWorld.gravity = .zero
         physicsWorld.contactDelegate = self
-        backgroundColor = UIColor(red: 0.02, green: 0.02, blue: 0.06, alpha: 1)
+        backgroundColor = UIColor(red: 0.08, green: 0.06, blue: 0.05, alpha: 1)
     }
 
     private func setupBackground() {
-        for _ in 0..<150 {
-            let star = SKShapeNode(circleOfRadius: CGFloat.random(in: 0.4...1.8))
-            star.fillColor = UIColor(white: 1, alpha: CGFloat.random(in: 0.15...0.7))
-            star.strokeColor = .clear
-            star.position = CGPoint(x: CGFloat.random(in: 0..<size.width),
-                                    y: CGFloat.random(in: 0..<size.height))
-            star.zPosition = 0
-            addChild(star)
-            bgStars.append(star)
+        // Dungeon stone floor — dark brown base
+        backgroundColor = UIColor(red: 0.08, green: 0.06, blue: 0.05, alpha: 1)
 
-            let twinkle = SKAction.sequence([
-                SKAction.fadeAlpha(to: CGFloat.random(in: 0.05...0.25), duration: CGFloat.random(in: 1...3)),
-                SKAction.fadeAlpha(to: CGFloat.random(in: 0.4...0.9), duration: CGFloat.random(in: 1...3))
+        // Stone brick grid
+        let brickW: CGFloat = 52
+        let brickH: CGFloat = 28
+        var row = 0
+        var yy: CGFloat = 0
+        while yy < size.height + brickH {
+            var xx: CGFloat = row % 2 == 0 ? 0 : -brickW / 2
+            while xx < size.width + brickW {
+                let brick = SKShapeNode(rectOf: CGSize(width: brickW - 2, height: brickH - 2), cornerRadius: 1)
+                brick.fillColor = UIColor(
+                    red: CGFloat.random(in: 0.10...0.14),
+                    green: CGFloat.random(in: 0.08...0.11),
+                    blue: CGFloat.random(in: 0.06...0.09),
+                    alpha: 1)
+                brick.strokeColor = UIColor(white: 0, alpha: 0.4)
+                brick.lineWidth = 1
+                brick.position = CGPoint(x: xx + brickW / 2, y: yy + brickH / 2)
+                brick.zPosition = 0
+                addChild(brick)
+                xx += brickW
+            }
+            yy += brickH
+            row += 1
+        }
+
+        // Scattered dust particles
+        let dustSpawn = SKAction.run { [weak self] in
+            guard let self = self else { return }
+            let mote = SKShapeNode(circleOfRadius: CGFloat.random(in: 0.8...2.2))
+            mote.fillColor = UIColor(red: 0.7, green: 0.55, blue: 0.3, alpha: CGFloat.random(in: 0.2...0.5))
+            mote.strokeColor = .clear
+            mote.position = CGPoint(x: CGFloat.random(in: 0..<self.size.width),
+                                    y: CGFloat.random(in: 0..<self.size.height))
+            mote.zPosition = 1
+            self.addChild(mote)
+            mote.run(SKAction.sequence([
+                SKAction.group([
+                    SKAction.moveBy(x: CGFloat.random(in: -15...15), y: CGFloat.random(in: 5...25), duration: 3),
+                    SKAction.sequence([SKAction.fadeIn(withDuration: 0.5), SKAction.fadeOut(withDuration: 2.5)])
+                ]),
+                SKAction.removeFromParent()
+            ]))
+        }
+        run(SKAction.repeatForever(SKAction.sequence([dustSpawn, SKAction.wait(forDuration: 0.18)])))
+
+        // Torch flicker spots at corners/edges
+        let torchPositions: [CGPoint] = [
+            CGPoint(x: 0, y: 0), CGPoint(x: size.width, y: 0),
+            CGPoint(x: 0, y: size.height), CGPoint(x: size.width, y: size.height),
+            CGPoint(x: size.width / 2, y: 0), CGPoint(x: size.width / 2, y: size.height)
+        ]
+        for pos in torchPositions {
+            let glow = SKShapeNode(circleOfRadius: 45)
+            glow.fillColor = UIColor(red: 1.0, green: 0.45, blue: 0.05, alpha: 0.06)
+            glow.strokeColor = .clear
+            glow.position = pos
+            glow.zPosition = 1
+            addChild(glow)
+            let flicker = SKAction.sequence([
+                SKAction.fadeAlpha(to: 0.03, duration: CGFloat.random(in: 0.3...0.7)),
+                SKAction.fadeAlpha(to: 0.09, duration: CGFloat.random(in: 0.3...0.7))
             ])
-            star.run(SKAction.repeatForever(twinkle))
-        }
-
-        // Grid lines (subtle)
-        let gridAlpha: CGFloat = 0.04
-        let gridSpacing: CGFloat = 60
-        var x: CGFloat = 0
-        while x < size.width {
-            let line = SKShapeNode(rectOf: CGSize(width: 1, height: size.height))
-            line.fillColor = UIColor(white: 1, alpha: gridAlpha)
-            line.strokeColor = .clear
-            line.position = CGPoint(x: x, y: size.height / 2)
-            line.zPosition = 0
-            addChild(line)
-            x += gridSpacing
-        }
-        var y: CGFloat = 0
-        while y < size.height {
-            let line = SKShapeNode(rectOf: CGSize(width: size.width, height: 1))
-            line.fillColor = UIColor(white: 1, alpha: gridAlpha)
-            line.strokeColor = .clear
-            line.position = CGPoint(x: size.width / 2, y: y)
-            line.zPosition = 0
-            addChild(line)
-            y += gridSpacing
+            glow.run(SKAction.repeatForever(flicker))
         }
     }
 
@@ -302,7 +329,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         addChild(boss)
         enemies.append(boss)
         activeBoss = boss
-        hud.showBossBar(name: "VOID TITAN \(waveManager.bossCount + 1)")
+        hud.showBossBar(name: "DEMON LORD LVL \(waveManager.bossCount + 1)")
 
         // Boss entry flash
         let flash = SKSpriteNode(color: UIColor(red: 0.9, green: 0.1, blue: 0.6, alpha: 0.3), size: size)

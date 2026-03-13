@@ -66,15 +66,28 @@ enum EnemyType {
         case .boss:     return 52
         }
     }
+    // Dark fantasy creature palette
     var fillColor: UIColor {
         switch self {
-        case .grunt:    return UIColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
-        case .speeder:  return UIColor(red: 1.0, green: 0.5, blue: 0.0, alpha: 1)
-        case .tank:     return UIColor(red: 0.5, green: 0.1, blue: 0.1, alpha: 1)
-        case .shooter:  return UIColor(red: 0.7, green: 0.2, blue: 0.9, alpha: 1)
-        case .splitter: return UIColor(red: 1.0, green: 0.85, blue: 0.0, alpha: 1)
-        case .sprinter: return UIColor(red: 1.0, green: 0.7, blue: 0.1, alpha: 1)
-        case .boss:     return UIColor(red: 0.9, green: 0.1, blue: 0.6, alpha: 1)
+        case .grunt:    return UIColor(red: 0.88, green: 0.86, blue: 0.76, alpha: 1) // Skeleton — bone
+        case .speeder:  return UIColor(red: 0.55, green: 0.78, blue: 0.95, alpha: 1) // Wraith — pale blue
+        case .tank:     return UIColor(red: 0.44, green: 0.41, blue: 0.38, alpha: 1) // Golem — stone gray
+        case .shooter:  return UIColor(red: 0.55, green: 0.14, blue: 0.78, alpha: 1) // Necromancer — purple
+        case .splitter: return UIColor(red: 0.18, green: 0.82, blue: 0.22, alpha: 1) // Slime — green
+        case .sprinter: return UIColor(red: 0.42, green: 0.96, blue: 0.42, alpha: 1) // Slimeling — bright green
+        case .boss:     return UIColor(red: 0.78, green: 0.05, blue: 0.08, alpha: 1) // Demon Lord — deep crimson
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case .grunt:    return "Skeleton"
+        case .speeder:  return "Wraith"
+        case .tank:     return "Golem"
+        case .shooter:  return "Necromancer"
+        case .splitter: return "Slime"
+        case .sprinter: return "Slimeling"
+        case .boss:     return "Demon Lord"
         }
     }
     var isBoss: Bool { self == .boss }
@@ -139,7 +152,11 @@ class Enemy: SKNode {
         pb.categoryBitMask = PhysicsCategory.enemy
         pb.contactTestBitMask = PhysicsCategory.playerBullet | PhysicsCategory.player | PhysicsCategory.orbitalBlade
         pb.collisionBitMask = PhysicsCategory.none
-        pb.isDynamic = false
+        pb.isDynamic         = true
+        pb.affectedByGravity = false
+        pb.linearDamping     = 0
+        pb.angularDamping    = 0
+        pb.allowsRotation    = false
         physicsBody = pb
         zPosition = 5
 

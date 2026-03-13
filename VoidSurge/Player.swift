@@ -40,10 +40,10 @@ class Player: SKNode {
         path.closeSubpath()
 
         body = SKShapeNode(path: path)
-        body.fillColor = UIColor.cyan
-        body.strokeColor = UIColor.white
+        body.fillColor = UIColor(red: 1.0, green: 0.78, blue: 0.15, alpha: 1)  // amber hero
+        body.strokeColor = UIColor(red: 1.0, green: 0.95, blue: 0.7, alpha: 1)
         body.lineWidth = 1.5
-        body.glowWidth = 4
+        body.glowWidth = 5
 
         let thrusterPath = CGMutablePath()
         thrusterPath.move(to: CGPoint(x: -6, y: -14))
@@ -70,7 +70,11 @@ class Player: SKNode {
         pb.categoryBitMask = PhysicsCategory.player
         pb.contactTestBitMask = PhysicsCategory.enemy | PhysicsCategory.enemyBullet
         pb.collisionBitMask = PhysicsCategory.none
-        pb.isDynamic = false
+        pb.isDynamic         = true
+        pb.affectedByGravity = false
+        pb.linearDamping     = 0
+        pb.angularDamping    = 0
+        pb.allowsRotation    = false
         physicsBody = pb
 
         zPosition = 10
@@ -224,7 +228,11 @@ class OrbitalBlade: SKShapeNode {
         body.categoryBitMask = PhysicsCategory.orbitalBlade
         body.contactTestBitMask = PhysicsCategory.enemy
         body.collisionBitMask = PhysicsCategory.none
-        body.isDynamic = false
+        body.isDynamic         = true
+        body.affectedByGravity = false
+        body.linearDamping     = 0
+        body.angularDamping    = 0
+        body.allowsRotation    = false
         physicsBody = body
         zPosition = 9
     }
