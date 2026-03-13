@@ -372,7 +372,7 @@ class GameScene extends Phaser.Scene {
       if (this.upgradeOn || this.tutorialOn) return;
       this.joy.move(p);
     });
-    this.input.on('pointerup', p => this.joy.up(p));
+    this.input.on('pointerup', p => { if (!this.upgradeOn) this.joy.up(p); });
 
     this.cameras.main.startFollow(this.player,true,0.1,0.1);
     this.cameras.main.fadeIn(400);
@@ -684,7 +684,10 @@ class GameScene extends Phaser.Scene {
     const zone=this.add.zone(cx,H/2,W,H).setScrollFactor(0).setDepth(82).setInteractive();
     zone.on('pointerdown',()=>{
       objs.forEach(o=>o.destroy()); zone.destroy();
-      this.tutorialOn=false;
+      // Delay one tick: in Phaser 3, game object events (zone) fire before scene-level
+      // input.on(), so setting tutorialOn=false here would let the current tap also
+      // trigger joy.down(). delayedCall(0) defers until after this event is fully processed.
+      this.time.delayedCall(0, ()=>{ this.tutorialOn=false; });
     });
   }
 
@@ -900,7 +903,8 @@ class GameScene extends Phaser.Scene {
     }
 
     if (this.invTimer>0) this.invTimer-=dt;
-    if (this.stats.hpRegen>0) this.stats.currentHP=Math.min(this.stats.maxHP, this.stats.currentHP+this.stats.hpRegen*dt);
+    if (this.stats.hpRegen>0 && !this.upgradeOn && !this.tutorialOn)
+      this.stats.currentHP=Math.min(this.stats.maxHP, this.stats.currentHP+this.stats.hpRegen*dt);
 
     this._updateBlades(dt);
 
